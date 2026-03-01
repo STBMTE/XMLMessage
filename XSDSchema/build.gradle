@@ -1,0 +1,62 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'com.example'
+version = '1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    xmlbeansTool
+}
+
+dependencies {
+    api 'org.apache.xmlbeans:xmlbeans:5.2.1'
+    xmlbeansTool 'org.apache.xmlbeans:xmlbeans:5.2.1'
+    xmlbeansTool 'org.apache.logging.log4j:log4j-core:2.25.3'
+}
+
+def genSrcDir = "$buildDir/generated/xmlbeans"
+def xmlTypesJarPath = "$buildDir/generated/xmlbeans/xmltypes.jar"
+
+tasks.register('generateXmlBeans', JavaExec) {
+    def xsdDir = "src/main/resources"
+
+    inputs.dir xsdDir
+    outputs.dir genSrcDir
+    outputs.file xmlTypesJarPath
+
+    classpath = configurations.xmlbeansTool
+    mainClass = 'org.apache.xmlbeans.impl.tool.SchemaCompiler'
+
+    doFirst {
+        delete(genSrcDir)
+        file(genSrcDir).mkdirs()
+    }
+
+    args = [
+            '-src', genSrcDir,
+            '-out', xmlTypesJarPath,
+            xsdDir
+    ]
+}
+
+compileJava.dependsOn generateXmlBeans
+
+sourceSets.main.java.srcDir genSrcDir
+
+processResources.dependsOn generateXmlBeans
+processResources {
+    from(zipTree(xmlTypesJarPath)) {
+        include 'org/apache/xmlbeans/metadata/**/*.xsb'
+    }
+}

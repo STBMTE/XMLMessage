@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.com/message"
+           xmlns:tns="http://example.com/message"
+           elementFormDefault="qualified">
+
+    <xs:simpleType name="StatusCodeType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="0"/>
+            <xs:enumeration value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="HeaderType">
+        <xs:attribute name="time" type="xs:dateTime" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="RequestType">
+        <xs:sequence>
+            <xs:element name="user" type="xs:string"/>
+            <xs:element name="text" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="StatusType">
+        <xs:sequence>
+            <xs:element name="code" type="tns:StatusCodeType"/>
+            <xs:element name="reason" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ResponseType">
+        <xs:sequence>
+            <xs:element name="status" type="tns:StatusType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="MessageType">
+        <xs:sequence>
+            <xs:element name="header" type="tns:HeaderType"/>
+            <xs:choice>
+                <xs:element name="request" type="tns:RequestType"/>
+                <xs:element name="response" type="tns:ResponseType"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="message" type="tns:MessageType"/>
+
+</xs:schema>
